@@ -1,0 +1,24 @@
+---
+- name: Validate the certificate configuration
+  hosts: oo_first_master
+  any_errors_fatal: true
+  vars:
+    overwrite_named_certs: "{{ openshift_master_overwrite_named_certificates | default(false) }}"
+  tasks:  
+  - openshift_facts:
+      role: master
+      system_facts: "{{ vars_openshift_facts_system_facts }}"
+      local_facts:
+        named_certificates: "{{ openshift_master_named_certificates | default([]) }}"
+      additive_facts_to_overwrite:
+      - "{{ 'master.named_certificates' if overwrite_named_certs | bool else omit }}"
+  - name: Check if the cafile is configured
+    set_fact:
+      named_certificates_ca_file_defined: "{{ named_certificates | lib_utils_oo_collect('cafile')}}"
+  - name: Show message if the cafile is not configured
+    fail:
+      msg: "The cafile is not configured in the openshift_named_certificates. The cafile must be configured for the cluster's components to trust the named certificate signer. Set the 'openshift_named_certificate_omit_cafile=true' to omit the error."
+    when:
+    - named_certificates_ca_file_defined | length = 0
+    - not openshift_named_certificate_omit_cafile
+    run_once: true
