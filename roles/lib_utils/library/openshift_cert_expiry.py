@@ -315,7 +315,10 @@ A tuple of the form:
         # string with the alt names separated by a comma and a
         # space. Split the string by ', ' and then add our new names
         # to the list of existing names
+        print("##### SAN: " + str(san) + " #####")
         cert_subjects.extend(str(san).split(', '))
+
+        
 
     cert_subject = u', '.join(cert_subjects)
     ######################################################################
